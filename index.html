@@ -718,8 +718,8 @@ function tick() {
 
 /* TESSELLATION */
 function makeTessellation(w, h) {
-  const cols = USE_LIGHTWEIGHT_EFFECTS ? 3 + Math.floor(Math.random() * 2) : IS_SAFARI ? 5 + Math.floor(Math.random() * 2) : 9 + Math.floor(Math.random() * 3);
-  const rows = USE_LIGHTWEIGHT_EFFECTS ? 3 + Math.floor(Math.random() * 2) : IS_SAFARI ? 4 + Math.floor(Math.random() * 2) : 6 + Math.floor(Math.random() * 2);
+  const cols = USE_LIGHTWEIGHT_EFFECTS ? 3 + Math.floor(Math.random() * 2) : IS_SAFARI ? 3 + Math.floor(Math.random() * 2) : 9 + Math.floor(Math.random() * 3);
+  const rows = USE_LIGHTWEIGHT_EFFECTS ? 3 + Math.floor(Math.random() * 2) : IS_SAFARI ? 3 + Math.floor(Math.random() * 2) : 6 + Math.floor(Math.random() * 2);
   const pts = [];
 
   for (let r = 0; r <= rows; r++) {
