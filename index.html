@@ -790,6 +790,9 @@ function burst(x, y) {
 function shatter(overlay, cx, cy) {
   const w = overlay.offsetWidth, h = overlay.offsetHeight;
   if (!w || !h) return;
+  /* Capture rect before we mutate the overlay so shards land in the right
+     viewport position even after overlay.style changes below. */
+  const rect = overlay.getBoundingClientRect();
   const shards = makeTessellation(w, h);
   overlay.style.background = 'none';
   overlay.style.backdropFilter = 'none';
@@ -811,8 +814,10 @@ function shatter(overlay, cx, cy) {
     const dur = USE_LIGHTWEIGHT_EFFECTS ? 600 + Math.random() * 200 : 480 + Math.random() * 260;
 
     const el = document.createElement('div');
+    /* Appended to body with position:fixed so shards escape the overlay's
+       isolation:isolate compositor layer (Safari clips overflow otherwise). */
     el.style.cssText =
-      'position:absolute;left:0;top:0;' +
+      'position:fixed;left:' + rect.left + 'px;top:' + rect.top + 'px;' +
       'width:' + w + 'px;height:' + h + 'px;' +
       'clip-path:polygon(' + poly.map(p => p[0] + 'px ' + p[1] + 'px').join(',') + ');' +
       'background:' +
@@ -825,13 +830,13 @@ function shatter(overlay, cx, cy) {
         'rgba(255,255,255,0) 42%);' +
       'box-shadow:inset 0 0 0 1px rgba(255,255,255,0.18), inset 0 10px 16px rgba(255,255,255,0.08);' +
       'transform-origin:' + sx + 'px ' + sy + 'px;' +
-      'pointer-events:none;will-change:transform,opacity;';
-    overlay.appendChild(el);
+      'pointer-events:none;will-change:transform,opacity;z-index:99990;';
+    document.body.appendChild(el);
 
     el.animate([
       { transform:'translate(0,0) rotate(0deg)', opacity:0.88 },
       { transform:'translate(' + tx + 'px,' + ty + 'px) rotate(' + rot + 'deg)', opacity:0 }
-    ], { duration:dur, delay:delay, easing:'cubic-bezier(0.2,0.9,0.3,1)', fill:'forwards' });
+    ], { duration:dur, delay:delay, easing:'cubic-bezier(0.2,0.9,0.3,1)', fill:'forwards' }).onfinish = () => el.remove();
   });
 
   setTimeout(() => overlay.remove(), USE_LIGHTWEIGHT_EFFECTS ? 900 : 1350);
@@ -852,6 +857,17 @@ function initOverlay(overlay) {
       'rgba(158,205,238,0.12)';
     overlay.style.backdropFilter = USE_LIGHTWEIGHT_EFFECTS ? 'none' : 'blur(4px) brightness(1.01) saturate(1.02)';
     overlay.style.webkitBackdropFilter = USE_LIGHTWEIGHT_EFFECTS ? 'none' : 'blur(4px) brightness(1.01) saturate(1.02)';
+
+    /* Title appended first so ice layers paint over it in Safari's flat
+       stacking context, matching Chrome's preserve-3d z=0 depth. */
+    if (label) {
+      var fs = Math.min((section.offsetWidth || 300) / label.length * 1.6, 82);
+      var lblDiv = document.createElement('div');
+      lblDiv.className = 'ice-title';
+      lblDiv.style.fontSize = Math.max(fs, 24) + 'px';
+      lblDiv.textContent = label;
+      overlay.appendChild(lblDiv);
+    }
 
     var photoDiv = document.createElement('div');
     photoDiv.className = 'ice-photo';
@@ -891,15 +907,6 @@ function initOverlay(overlay) {
       var causticDiv = document.createElement('div');
       causticDiv.className = 'ice-caustic';
       overlay.appendChild(causticDiv);
-    }
-
-    if (label) {
-      var fs = Math.min((section.offsetWidth || 300) / label.length * 1.6, 82);
-      var lblDiv = document.createElement('div');
-      lblDiv.className = 'ice-title';
-      lblDiv.style.fontSize = Math.max(fs, 24) + 'px';
-      lblDiv.textContent = label;
-      overlay.appendChild(lblDiv);
     }
 
     var ctbDiv = document.createElement('div');
@@ -961,9 +968,11 @@ function initOverlay(overlay) {
   overlay.addEventListener('click', function(e) {
     if (!overlay._frozen) return;
     const idx = overlay.dataset.i;
-    if (idx==='0'||idx==='3'){audioMain.currentTime=0;audioMain.play().catch(()=>{});}
-    else if(idx==='1'||idx==='4'){audioOffbeat.currentTime=0;audioOffbeat.play().catch(()=>{});}
-    else if(idx==='2'){audioViral.currentTime=0;audioViral.play().catch(()=>{});}
+    try {
+      if (idx==='0'||idx==='3'){audioMain.currentTime=0;audioMain.play().catch(()=>{});}
+      else if(idx==='1'||idx==='4'){audioOffbeat.currentTime=0;audioOffbeat.play().catch(()=>{});}
+      else if(idx==='2'){audioViral.currentTime=0;audioViral.play().catch(()=>{});}
+    } catch(e){}
     breakIt(e.clientX, e.clientY);
   });
 }
