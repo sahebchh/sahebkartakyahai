@@ -789,6 +789,8 @@ function shatter(overlay, cx, cy) {
   overlay.style.backdropFilter = 'none';
   overlay.style.webkitBackdropFilter = 'none';
   overlay.style.overflow = 'visible';
+  overlay.style.transformStyle = 'flat';
+  overlay.style.isolation = 'auto';
   Array.from(overlay.children).forEach(function(c) { c.remove(); });
 
   shards.forEach(function(poly) {
