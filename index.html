@@ -664,15 +664,9 @@ body{
 (function(){
 'use strict';
 
-const IS_TOUCH_DEVICE =
-  window.matchMedia('(pointer: coarse)').matches ||
-  navigator.maxTouchPoints > 0;
-
-const IS_SMALL_SCREEN = window.innerWidth <= 700;
-
-const IS_SAFARI = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-const USE_LIGHTWEIGHT_EFFECTS =
-  IS_TOUCH_DEVICE && IS_SMALL_SCREEN && !IS_SAFARI;
+const IS_TOUCH_DEVICE = window.matchMedia('(hover: none), (pointer: coarse)').matches;
+const IS_MOBILE_LAYOUT = window.matchMedia('(max-width: 700px)').matches;
+const USE_LIGHTWEIGHT_EFFECTS = IS_TOUCH_DEVICE || IS_MOBILE_LAYOUT;
 
 /* CURSOR */
 const cursor = document.getElementById('cursor');
@@ -797,10 +791,6 @@ function shatter(overlay, cx, cy) {
   overlay.style.overflow = 'visible';
   Array.from(overlay.children).forEach(function(c) { c.remove(); });
 
-  overlay.style.transformStyle = 'flat';
-  overlay.style.isolation = 'auto';
-  overlay.style.overflow = 'visible';
-
   shards.forEach(function(poly) {
     const sx = poly.reduce((s,p) => s + p[0], 0) / poly.length;
     const sy = poly.reduce((s,p) => s + p[1], 0) / poly.length;
@@ -812,7 +802,7 @@ function shatter(overlay, cx, cy) {
     const ty = Math.sin(ang) * force;
     const rot = (Math.random() - 0.5) * 580;
     const delay = USE_LIGHTWEIGHT_EFFECTS ? Math.min(dist * 0.2, 70) : Math.min(dist * 0.35, 110);
-    const dur = USE_LIGHTWEIGHT_EFFECTS ? 600 + Math.random() * 200 : 480 + Math.random() * 260;
+    const dur = USE_LIGHTWEIGHT_EFFECTS ? 320 + Math.random() * 140 : 480 + Math.random() * 260;
 
     const el = document.createElement('div');
     el.style.cssText =
@@ -835,7 +825,7 @@ function shatter(overlay, cx, cy) {
     el.animate([
       { transform:'translate(0,0) rotate(0deg)', opacity:0.88 },
       { transform:'translate(' + tx + 'px,' + ty + 'px) rotate(' + rot + 'deg)', opacity:0 }
-    ], { duration:dur, delay:delay, easing:'cubic-bezier(0.2,0.9,0.3,1)', fill:'forwards' }).onfinish = () => el.remove();
+    ], { duration:dur, delay:delay, easing:'cubic-bezier(0.2,0.9,0.3,1)', fill:'forwards' });
   });
 
   setTimeout(() => overlay.remove(), USE_LIGHTWEIGHT_EFFECTS ? 900 : 1350);
@@ -856,17 +846,6 @@ function initOverlay(overlay) {
       'rgba(158,205,238,0.12)';
     overlay.style.backdropFilter = USE_LIGHTWEIGHT_EFFECTS ? 'none' : 'blur(4px) brightness(1.01) saturate(1.02)';
     overlay.style.webkitBackdropFilter = USE_LIGHTWEIGHT_EFFECTS ? 'none' : 'blur(4px) brightness(1.01) saturate(1.02)';
-
-    /* Title appended first so ice layers paint over it in Safari's flat
-       stacking context, matching Chrome's preserve-3d z=0 depth. */
-    if (label) {
-      var fs = Math.min((section.offsetWidth || 300) / label.length * 1.6, 82);
-      var lblDiv = document.createElement('div');
-      lblDiv.className = 'ice-title';
-      lblDiv.style.fontSize = Math.max(fs, 24) + 'px';
-      lblDiv.textContent = label;
-      overlay.appendChild(lblDiv);
-    }
 
     var photoDiv = document.createElement('div');
     photoDiv.className = 'ice-photo';
@@ -906,6 +885,15 @@ function initOverlay(overlay) {
       var causticDiv = document.createElement('div');
       causticDiv.className = 'ice-caustic';
       overlay.appendChild(causticDiv);
+    }
+
+    if (label) {
+      var fs = Math.min((section.offsetWidth || 300) / label.length * 1.6, 82);
+      var lblDiv = document.createElement('div');
+      lblDiv.className = 'ice-title';
+      lblDiv.style.fontSize = Math.max(fs, 24) + 'px';
+      lblDiv.textContent = label;
+      overlay.appendChild(lblDiv);
     }
 
     var ctbDiv = document.createElement('div');
@@ -967,11 +955,9 @@ function initOverlay(overlay) {
   overlay.addEventListener('click', function(e) {
     if (!overlay._frozen) return;
     const idx = overlay.dataset.i;
-    try {
-      if (idx==='0'||idx==='3'){audioMain.currentTime=0;audioMain.play().catch(()=>{});}
-      else if(idx==='1'||idx==='4'){audioOffbeat.currentTime=0;audioOffbeat.play().catch(()=>{});}
-      else if(idx==='2'){audioViral.currentTime=0;audioViral.play().catch(()=>{});}
-    } catch(e){}
+    if (idx==='0'||idx==='3'){audioMain.currentTime=0;audioMain.play().catch(()=>{});}
+    else if(idx==='1'||idx==='4'){audioOffbeat.currentTime=0;audioOffbeat.play().catch(()=>{});}
+    else if(idx==='2'){audioViral.currentTime=0;audioViral.play().catch(()=>{});}
     breakIt(e.clientX, e.clientY);
   });
 }
