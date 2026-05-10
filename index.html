@@ -847,8 +847,8 @@ function initOverlay(overlay) {
     overlay.style.background =
       'linear-gradient(180deg,rgba(240,248,255,0.18),rgba(188,221,247,0.08) 44%,rgba(92,145,193,0.16) 100%),' +
       'rgba(158,205,238,0.12)';
-    overlay.style.backdropFilter = USE_LIGHTWEIGHT_EFFECTS ? 'none' : 'blur(4px) brightness(1.01) saturate(1.02)';
-    overlay.style.webkitBackdropFilter = USE_LIGHTWEIGHT_EFFECTS ? 'none' : 'blur(4px) brightness(1.01) saturate(1.02)';
+    overlay.style.backdropFilter = 'blur(4px) brightness(1.01) saturate(1.02)';
+    overlay.style.webkitBackdropFilter = 'blur(4px) brightness(1.01) saturate(1.02)';
 
     var photoDiv = document.createElement('div');
     photoDiv.className = 'ice-photo';
