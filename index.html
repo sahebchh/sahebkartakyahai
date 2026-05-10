@@ -967,9 +967,11 @@ document.getElementById('nuke').addEventListener('click', function() {
   const frozen = Array.from(document.querySelectorAll('.ice-overlay')).filter(o => o._frozen);
   if (!frozen.length) return;
   playAllTracksFromStart();
-  frozen.forEach(function(ov) {
-    const rect = ov.getBoundingClientRect();
-    ov._breakIt(rect.left + rect.width / 2, rect.top + rect.height / 2);
+  frozen.forEach(function(ov, i) {
+    setTimeout(function() {
+      const rect = ov.getBoundingClientRect();
+      ov._breakIt(rect.left + rect.width / 2, rect.top + rect.height / 2);
+    }, i * 150);
   });
   setTimeout(function() { if (broken >= 5) { setResetBtn(); } }, 200);
 });
